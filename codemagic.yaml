@@ -1,0 +1,52 @@
+# Codemagic 云构建 · 路线2：仅出“未签名 IPA”，不碰任何苹果签名
+# 配合 Windows 端 Sideloadly + 你的【免费】Apple ID 侧载进自己的 iPhone
+# 全程无需 $99 付费账号、无需手动传证书/描述文件、无需任何 Apple Secret
+#
+# 构建完成后下载到的 XunJianIOS.ipa 是“未签名”的，
+# 由你本机 Sideloadly 用免费 Apple ID 重新签名后安装到手机。
+workflows:
+  ios-ipa-free:
+    name: Build unsigned IPA (Sideloadly)
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      xcode: latest
+      vars:
+        XCODE_PROJECT: XunJianIOS.xcodeproj
+        XCODE_SCHEME: XunJianIOS
+    scripts:
+      - name: Install XcodeGen
+        script: brew install xcodegen
+      - name: Generate Xcode project
+        script: xcodegen generate
+      - name: Archive (ad-hoc / unsigned, no paid cert)
+        script: |
+          set -e
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -archivePath build/XunJianIOS.xcarchive \
+            -destination 'generic/platform=iOS' \
+            clean archive \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM=""
+      - name: Package IPA (Payload)
+        script: |
+          set -e
+          APP=$(find build/XunJianIOS.xcarchive/Products/Applications -name "*.app" -maxdepth 1 | head -1)
+          echo "App path: $APP"
+          if [ -z "$APP" ]; then echo "ERROR: .app not found"; exit 1; fi
+          rm -rf build/ipa
+          mkdir -p build/ipa/Payload
+          cp -R "$APP" build/ipa/Payload/
+          cd build/ipa
+          zip -r XunJianIOS.ipa Payload
+          ls -la XunJianIOS.ipa
+    artifacts:
+      - build/ipa/XunJianIOS.ipa
+    publishing:
+      email:
+        recipients:
+          - user@example.com
