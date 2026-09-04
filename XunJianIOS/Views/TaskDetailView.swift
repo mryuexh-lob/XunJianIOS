@@ -2,7 +2,7 @@ import SwiftUI
 
 struct TaskDetailView: View {
     let taskId: Int
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.presentationMode) var presentationMode
     @State private var task: InspectionTask?
     @State private var busy = false
     @State private var message: String?
@@ -58,7 +58,7 @@ struct TaskDetailView: View {
                                 busy = true
                                 do {
                                     try await APIClient.shared.deleteInspection(id: taskId)
-                                    await MainActor.run { dismiss() }
+                                    await MainActor.run { presentationMode.wrappedValue.dismiss() }
                                 } catch {
                                     message = error.localizedDescription; showError = true
                                 }
@@ -129,7 +129,7 @@ struct TaskDetailView: View {
 struct HazardSheet: View {
     let taskId: Int
     let onDone: () -> Void
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.presentationMode) var presentationMode
     @State private var point = ""
     @State private var level = "一般"
     @State private var desc = ""
@@ -147,7 +147,7 @@ struct HazardSheet: View {
                 TextField("描述", text: $desc)
             }
             .navigationTitle("危险点登记")
-            .navigationBarItems(leading: Button("取消") { dismiss() },
+            .navigationBarItems(leading: Button("取消") { presentationMode.wrappedValue.dismiss() },
                                 trailing: Button("提交") { submit() })
             .alert(isPresented: $showError) {
                 Alert(title: Text("错误"), message: Text(errorMsg ?? ""),
@@ -160,7 +160,7 @@ struct HazardSheet: View {
             do {
                 try await APIClient.shared.hazardInspection(id: taskId, point: point,
                                                             level: level, desc: desc, duty: duty)
-                await MainActor.run { dismiss(); onDone() }
+                await MainActor.run { presentationMode.wrappedValue.dismiss(); onDone() }
             } catch {
                 await MainActor.run { errorMsg = error.localizedDescription; showError = true }
             }
@@ -173,7 +173,7 @@ struct FormSheet: View {
     let taskId: Int
     let deviceNo: String
     let onDone: () -> Void
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.presentationMode) var presentationMode
     @State private var items = ""
     @State private var dev: String
     @State private var errorMsg: String?
@@ -190,7 +190,7 @@ struct FormSheet: View {
                 TextField("巡检项（JSON 数组，如 [\"测温\",\"紧固\"]）", text: $items)
             }
             .navigationTitle("表单化作业")
-            .navigationBarItems(leading: Button("取消") { dismiss() },
+            .navigationBarItems(leading: Button("取消") { presentationMode.wrappedValue.dismiss() },
                                 trailing: Button("提交") { submit() })
             .alert(isPresented: $showError) {
                 Alert(title: Text("错误"), message: Text(errorMsg ?? ""),
@@ -202,7 +202,7 @@ struct FormSheet: View {
         Task {
             do {
                 try await APIClient.shared.formInspection(id: taskId, items: items, deviceNo: dev)
-                await MainActor.run { dismiss(); onDone() }
+                await MainActor.run { presentationMode.wrappedValue.dismiss(); onDone() }
             } catch {
                 await MainActor.run { errorMsg = error.localizedDescription; showError = true }
             }
@@ -215,7 +215,7 @@ struct AssignSheet: View {
     let taskId: Int
     let inspectors: [Inspector]
     let onDone: () -> Void
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.presentationMode) var presentationMode
     @State private var selected = ""
     @State private var errorMsg: String?
     @State private var showError = false
@@ -231,7 +231,7 @@ struct AssignSheet: View {
                 }
             }
             .navigationTitle("指派任务")
-            .navigationBarItems(leading: Button("取消") { dismiss() },
+            .navigationBarItems(leading: Button("取消") { presentationMode.wrappedValue.dismiss() },
                                 trailing: Button("确定") { submit() })
             .alert(isPresented: $showError) {
                 Alert(title: Text("错误"), message: Text(errorMsg ?? ""),
@@ -244,7 +244,7 @@ struct AssignSheet: View {
         Task {
             do {
                 try await APIClient.shared.assignInspection(id: taskId, assignee: selected)
-                await MainActor.run { dismiss(); onDone() }
+                await MainActor.run { presentationMode.wrappedValue.dismiss(); onDone() }
             } catch {
                 await MainActor.run { errorMsg = error.localizedDescription; showError = true }
             }
@@ -257,7 +257,7 @@ struct UpdateSheet: View {
     let taskId: Int
     let currentStatus: String?
     let onDone: () -> Void
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.presentationMode) var presentationMode
     @State private var status: String
     @State private var remark = ""
     @State private var errorMsg: String?
@@ -275,7 +275,7 @@ struct UpdateSheet: View {
                 TextField("备注", text: $remark)
             }
             .navigationTitle("更新任务")
-            .navigationBarItems(leading: Button("取消") { dismiss() },
+            .navigationBarItems(leading: Button("取消") { presentationMode.wrappedValue.dismiss() },
                                 trailing: Button("确定") { submit() })
             .alert(isPresented: $showError) {
                 Alert(title: Text("错误"), message: Text(errorMsg ?? ""),
@@ -290,7 +290,7 @@ struct UpdateSheet: View {
                 if !status.isEmpty { fields["status"] = status }
                 if !remark.isEmpty { fields["remark"] = remark }
                 try await APIClient.shared.updateInspection(id: taskId, fields: fields)
-                await MainActor.run { dismiss(); onDone() }
+                await MainActor.run { presentationMode.wrappedValue.dismiss(); onDone() }
             } catch {
                 await MainActor.run { errorMsg = error.localizedDescription; showError = true }
             }

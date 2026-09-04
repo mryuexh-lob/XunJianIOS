@@ -2,7 +2,7 @@ import SwiftUI
 
 struct NewTaskView: View {
     let onCreated: () -> Void
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.presentationMode) var presentationMode
     @State private var title = ""
     @State private var address = ""
     @State private var line = ""
@@ -29,7 +29,7 @@ struct NewTaskView: View {
                 }
             }
             .navigationTitle("新建巡检任务")
-            .navigationBarItems(leading: Button("取消") { dismiss() },
+            .navigationBarItems(leading: Button("取消") { presentationMode.wrappedValue.dismiss() },
                                 trailing: Button("保存") { submit() })
             .alert(isPresented: $showError) {
                 Alert(title: Text("提示"), message: Text(errorMsg ?? ""),
@@ -47,7 +47,7 @@ struct NewTaskView: View {
                     "tower": tower, "point": point, "deviceNo": deviceNo, "taskType": taskType
                 ]
                 try await APIClient.shared.createInspection(fields)
-                await MainActor.run { dismiss(); onCreated() }
+                await MainActor.run { presentationMode.wrappedValue.dismiss(); onCreated() }
             } catch {
                 await MainActor.run { errorMsg = error.localizedDescription; showError = true; busy = false }
             }

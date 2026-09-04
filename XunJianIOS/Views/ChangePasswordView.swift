@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ChangePasswordView: View {
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.presentationMode) var presentationMode
     @State private var oldPwd = ""
     @State private var newPwd = ""
     @State private var busy = false
@@ -16,14 +16,14 @@ struct ChangePasswordView: View {
                 SecureField("新密码", text: $newPwd)
             }
             .navigationTitle("修改密码")
-            .navigationBarItems(leading: Button("取消") { dismiss() },
+            .navigationBarItems(leading: Button("取消") { presentationMode.wrappedValue.dismiss() },
                                 trailing: Button("保存") { submit() })
             .alert(isPresented: $showError) {
                 Alert(title: Text("提示"), message: Text(errorMsg ?? ""),
                       dismissButton: .default(Text("确定")))
             }
             .alert("修改成功", isPresented: $success) {
-                Button("确定") { dismiss() }
+                Button("确定") { presentationMode.wrappedValue.dismiss() }
             } message: {
                 Text("密码已修改（注意：服务端未校验复杂度，弱口令可直接生效）")
             }
