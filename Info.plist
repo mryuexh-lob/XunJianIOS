@@ -26,11 +26,22 @@
     <array>
         <string>UIInterfaceOrientationPortrait</string>
     </array>
-    <!-- 与安卓端一致：允许 HTTP 明文访问本地后端 -->
+    <!-- 与安卓端 usesCleartextTraffic="true" 对应：允许 HTTP 明文访问后端 -->
     <key>NSAppTransportSecurity</key>
     <dict>
         <key>NSAllowsArbitraryLoads</key>
         <true/>
+        <key>NSAllowsArbitraryLoadsInWebContent</key>
+        <true/>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
     </dict>
+    <!-- iOS 14+ 访问局域网（192.168.x.x）必须声明，否则连接被静默拦截（Safari 不受此限制） -->
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>本应用需要访问局域网内的服务器地址，用于登录与同步巡检数据。</string>
+    <key>NSBonjourServices</key>
+    <array>
+        <string>_http._tcp</string>
+    </array>
 </dict>
 </plist>

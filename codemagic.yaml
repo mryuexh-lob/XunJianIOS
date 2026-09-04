@@ -18,10 +18,13 @@ workflows:
       - name: Install XcodeGen
         script: brew install xcodegen
       - name: Generate Xcode project
-        script: xcodegen generate
+        script: |
+          cd github-upload
+          xcodegen generate
       - name: Archive (ad-hoc / unsigned, no paid cert)
         script: |
           set -e
+          cd github-upload
           xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" \
             -configuration Release \
             -archivePath build/XunJianIOS.xcarchive \
@@ -35,6 +38,7 @@ workflows:
       - name: Package IPA (Payload)
         script: |
           set -e
+          cd github-upload
           APP=$(find build/XunJianIOS.xcarchive/Products/Applications -name "*.app" -maxdepth 1 | head -1)
           echo "App path: $APP"
           if [ -z "$APP" ]; then echo "ERROR: .app not found"; exit 1; fi
@@ -45,7 +49,7 @@ workflows:
           zip -r XunJianIOS.ipa Payload
           ls -la XunJianIOS.ipa
     artifacts:
-      - build/ipa/XunJianIOS.ipa
+      - github-upload/build/ipa/XunJianIOS.ipa
     publishing:
       email:
         recipients:

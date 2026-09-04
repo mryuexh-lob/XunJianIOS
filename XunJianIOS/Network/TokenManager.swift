@@ -1,8 +1,7 @@
 import Foundation
 
 /// 本地会话与配置管理。
-/// 说明：作为安全测试靶场样品，Token 明文存放在 UserDefaults（本身即一个不安全存储示例），
-/// 与安卓端行为保持一致，便于测试人员按标准条款发现该问题。
+/// Token 与服务器地址存放在 UserDefaults（与安卓端行为保持一致）。
 struct TokenManager {
     private static let kToken  = "xj_token"
     private static let kUser   = "xj_username"
@@ -24,9 +23,9 @@ struct TokenManager {
         set { UserDefaults.standard.set(newValue, forKey: kRole) }
     }
 
-    /// 服务器地址，默认与安卓端一致（本地局域网占位）。
+    /// 服务器地址，默认不写死（空串），首次启动请在登录页填写实际后端地址。
     static var serverURL: String {
-        get { UserDefaults.standard.string(forKey: kServer) ?? "http://192.168.31.206:8080" }
+        get { UserDefaults.standard.string(forKey: kServer) ?? "" }
         set { UserDefaults.standard.set(newValue, forKey: kServer) }
     }
 
