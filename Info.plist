@@ -36,12 +36,21 @@
         <key>NSAllowsLocalNetworking</key>
         <true/>
     </dict>
-    <!-- iOS 14+ 访问局域网（192.168.x.x）必须声明，否则连接被静默拦截（Safari 不受此限制） -->
+    <!-- iOS 14+ 访问局域网（192.168.x.x）必须声明，否则连接被静默拦截 -->
     <key>NSLocalNetworkUsageDescription</key>
     <string>本应用需要访问局域网内的服务器地址，用于登录与同步巡检数据。</string>
     <key>NSBonjourServices</key>
     <array>
         <string>_http._tcp</string>
     </array>
+    <!-- 巡检业务所需权限说明（对齐安卓版存储/位置/相机） -->
+    <key>NSCameraUsageDescription</key>
+    <string>电力巡检助手需要使用相机拍摄现场照片，用于巡检任务留档。</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>电力巡检助手需要获取您的位置信息，用于绑定巡检任务的地理位置。</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>电力巡检助手需要访问相册，用于保存和选取巡检照片与表单附件。</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>电力巡检助手需要将巡检照片保存到相册。</string>
 </dict>
 </plist>

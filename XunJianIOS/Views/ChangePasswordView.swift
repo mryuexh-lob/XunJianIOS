@@ -4,6 +4,7 @@ struct ChangePasswordView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var oldPwd = ""
     @State private var newPwd = ""
+    @State private var confirmPwd = ""
     @State private var busy = false
     @State private var errorMsg: String?
     @State private var showError = false
@@ -12,8 +13,11 @@ struct ChangePasswordView: View {
     var body: some View {
         NavigationView {
             Form {
-                SecureField("原密码", text: $oldPwd)
-                SecureField("新密码", text: $newPwd)
+                Section("修改密码") {
+                    SecureField("原密码", text: $oldPwd)
+                    SecureField("新密码", text: $newPwd)
+                    SecureField("确认新密码", text: $confirmPwd)
+                }
             }
             .navigationTitle("修改密码")
             .navigationBarItems(leading: Button("取消") { presentationMode.wrappedValue.dismiss() },
@@ -30,9 +34,11 @@ struct ChangePasswordView: View {
         }
     }
     func submit() {
-        guard !oldPwd.isEmpty, !newPwd.isEmpty else {
-            errorMsg = "请填写原密码和新密码"; showError = true; return
-        }
+        guard !oldPwd.isEmpty else { errorMsg = "请输入原密码"; showError = true; return }
+        guard !newPwd.isEmpty else { errorMsg = "请输入新密码"; showError = true; return }
+        guard !confirmPwd.isEmpty else { errorMsg = "请输入确认新密码"; showError = true; return }
+        guard newPwd == confirmPwd else { errorMsg = "两次输入的新密码不一致"; showError = true; return }
+
         busy = true
         Task {
             do {
