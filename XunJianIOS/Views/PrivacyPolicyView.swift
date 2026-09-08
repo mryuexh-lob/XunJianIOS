@@ -15,7 +15,7 @@ struct PrivacyPolicyView: View {
                     // 标题
                     Text("隐私政策与用户协议")
                         .font(.title3)
-                        .bold()
+                        .fontWeight(.bold)
                         .frame(maxWidth: .infinity, alignment: .center)
 
                     // 欢迎语
@@ -66,7 +66,7 @@ struct PrivacyPolicyView: View {
                         requestPermissions()
                         onAgreed()
                     }
-                    .bold()
+                    .fontWeight(.bold)
                 }
             }
             .alert("隐私政策详情", isPresented: $showFullPolicy) {
