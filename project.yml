@@ -11,6 +11,10 @@ targets:
     deploymentTarget: "15.0"
     sources:
       - path: XunJianIOS
+    dependencies:
+      - framework: AVFoundation
+      - framework: CoreLocation
+      - framework: Photos
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.epri.xunjian
