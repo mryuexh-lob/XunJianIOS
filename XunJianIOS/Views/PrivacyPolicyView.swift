@@ -4,79 +4,103 @@ import CoreLocation
 import Photos
 
 // MARK: - 隐私政策弹窗（首次启动显示，对齐安卓版 LoginActivity.showPrivacyDialog）
+// 采用半透明遮罩 + 居中小卡片样式，避免全屏铺满显得生硬
 struct PrivacyPolicyView: View {
     let onAgreed: () -> Void
     @State private var showFullPolicy = false
 
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    // 标题
-                    Text("隐私政策与用户协议")
-                        .font(.title3)
-                        .bold()
-                        .frame(maxWidth: .infinity, alignment: .center)
+        ZStack {
+            // 半透明遮罩（点击遮罩不关闭，必须明确选择）
+            Color.black.opacity(0.45)
+                .edgesIgnoringSafeArea(.all)
 
-                    // 欢迎语
-                    Text("欢迎使用电力巡检助手！")
-                        .font(.subheadline)
+            // 居中卡片
+            VStack(spacing: 0) {
+                // 标题
+                Text("隐私政策与用户协议")
+                    .font(.headline)
+                    .bold()
+                    .padding(.top, 18)
+                    .padding(.bottom, 10)
 
-                    // 权限说明（对齐安卓版文字）
-                    Text("为了保障巡检业务的正常开展，我们需要获取以下权限：")
-                        .font(.subheadline)
-                    VStack(alignment: .leading, spacing: 6) {
-                        permissionRow("存储权限", "用于保存巡检照片与表单附件")
-                        permissionRow("位置权限", "用于绑定巡检任务的地理位置")
-                        permissionRow("相机权限", "用于现场拍照留档")
-                    }
-                    .font(.caption)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(8)
-
-                    // 隐私承诺
-                    Text("我们不会收集您的通讯录等无关个人信息。请点击下方按钮表示同意。")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
-                    // 隐私政策链接
-                    Button(action: { showFullPolicy = true }) {
-                        Text("《隐私政策》")
-                            .foregroundColor(.blue)
+                // 可滚动内容
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("欢迎使用电力巡检助手！")
                             .font(.subheadline)
-                            .underline()
+
+                        Text("为了保障巡检业务的正常开展，我们需要获取以下权限：")
+                            .font(.subheadline)
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            permissionRow("存储权限", "用于保存巡检照片与表单附件")
+                            permissionRow("位置权限", "用于绑定巡检任务的地理位置")
+                            permissionRow("相机权限", "用于现场拍照留档")
+                        }
+                        .font(.caption)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+
+                        Text("我们不会收集您的通讯录等无关个人信息。请点击下方按钮表示同意。")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        Button(action: { showFullPolicy = true }) {
+                            Text("《隐私政策》")
+                                .foregroundColor(.blue)
+                                .font(.subheadline)
+                                .underline()
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                }
+                .frame(maxHeight: 300)
+
+                // 底部按钮
+                HStack(spacing: 12) {
+                    Button(action: { exit(0) }) {
+                        Text("不同意")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color(.systemGray5))
+                            .cornerRadius(10)
                     }
 
-                    Spacer(minLength: 20)
-                }
-                .padding()
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("不同意") {
-                        exit(0) // 对齐安卓 finish() 行为
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button {
+                    Button(action: {
                         UserDefaults.standard.set(true, forKey: "privacyAgreed")
                         requestPermissions()
                         onAgreed()
-                    } label: {
+                    }) {
                         Text("同意并继续").bold()
+                            .font(.subheadline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color.blue)
+                            .cornerRadius(10)
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
             }
-            .alert("隐私政策详情", isPresented: $showFullPolicy) {
-                Button("我知道了", role: .cancel) {}
-            } message: {
-                Text(privacyPolicyText())
-            }
+            .frame(maxWidth: 340)
+            .background(Color(.systemBackground))
+            .cornerRadius(16)
+            .shadow(radius: 12)
+            .padding(24)
         }
-        .navigationViewStyle(.stack)
+        .alert("隐私政策详情", isPresented: $showFullPolicy) {
+            Button("我知道了", role: .cancel) {}
+        } message: {
+            Text(privacyPolicyText())
+        }
     }
 
     private func permissionRow(_ name: String, _ desc: String) -> some View {
