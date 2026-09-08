@@ -12,9 +12,9 @@ targets:
     sources:
       - path: XunJianIOS
     dependencies:
-      - framework: AVFoundation
-      - framework: CoreLocation
-      - framework: Photos
+      - sdk: AVFoundation.framework
+      - sdk: CoreLocation.framework
+      - sdk: Photos.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.epri.xunjian
