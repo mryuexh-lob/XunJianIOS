@@ -15,7 +15,7 @@ struct PrivacyPolicyView: View {
                     // 标题
                     Text("隐私政策与用户协议")
                         .font(.title3)
-                        .fontWeight(.bold)
+                        .bold()
                         .frame(maxWidth: .infinity, alignment: .center)
 
                     // 欢迎语
@@ -61,12 +61,13 @@ struct PrivacyPolicyView: View {
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("同意并继续") {
+                    Button {
                         UserDefaults.standard.set(true, forKey: "privacyAgreed")
                         requestPermissions()
                         onAgreed()
+                    } label: {
+                        Text("同意并继续").bold()
                     }
-                    .fontWeight(.bold)
                 }
             }
             .alert("隐私政策详情", isPresented: $showFullPolicy) {
