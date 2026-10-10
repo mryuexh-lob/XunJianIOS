@@ -13,7 +13,7 @@ struct ChangePasswordView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("修改密码") {
+                Section(header: Text("修改密码")) {
                     SecureField("原密码", text: $oldPwd)
                     SecureField("新密码", text: $newPwd)
                     SecureField("确认新密码", text: $confirmPwd)

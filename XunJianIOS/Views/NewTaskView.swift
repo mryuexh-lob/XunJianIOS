@@ -18,7 +18,7 @@ struct NewTaskView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("基本信息") {
+                Section(header: Text("基本信息")) {
                     TextField("任务标题 *", text: $title)
                     TextField("地址", text: $address)
                     TextField("线路", text: $line)
