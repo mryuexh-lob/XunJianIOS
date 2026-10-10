@@ -96,10 +96,9 @@ struct PrivacyPolicyView: View {
             .shadow(radius: 12)
             .padding(24)
         }
-        .alert("隐私政策详情", isPresented: $showFullPolicy) {
-            Button("我知道了", role: .cancel) {}
-        } message: {
-            Text(privacyPolicyText())
+        .alert(isPresented: $showFullPolicy) {
+            Alert(title: Text("隐私政策详情"), message: Text(privacyPolicyText()),
+                  dismissButton: .default(Text("我知道了")))
         }
     }
 

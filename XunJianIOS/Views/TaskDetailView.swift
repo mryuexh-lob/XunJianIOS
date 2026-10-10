@@ -53,7 +53,7 @@ struct TaskDetailView: View {
                             showAssign = true
                         }
 
-                        Button(role: .destructive) {
+                        Button {
                             Task {
                                 busy = true
                                 do {

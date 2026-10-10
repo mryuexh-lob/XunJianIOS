@@ -36,13 +36,10 @@ struct LoginView: View {
                             TextField("请输入账号", text: $username)
                                 .autocapitalization(.none)
                                 .disableAutocorrection(true)
-                                .submitLabel(.next)
                                 .padding(12)
                                 .background(Color(.systemGray6))
                                 .cornerRadius(10)
-                            SecureField("请输入密码", text: $password)
-                                .submitLabel(.go)
-                                .onSubmit { doLogin() }
+                            SecureField("请输入密码", text: $password, onCommit: doLogin)
                                 .padding(12)
                                 .background(Color(.systemGray6))
                                 .cornerRadius(10)
@@ -60,7 +57,7 @@ struct LoginView: View {
                         Button(action: doLogin) {
                             if busy {
                                 HStack(spacing: 8) {
-                                    ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    ProgressView().progressViewStyle(CircularProgressViewStyle()).accentColor(.white)
                                     Text("登录中…").foregroundColor(.white)
                                 }
                             } else {
@@ -182,8 +179,6 @@ struct ServerSettingsSheet: View {
                             .keyboardType(.URL)
                             .autocapitalization(.none)
                             .disableAutocorrection(true)
-                            .submitLabel(.done)
-                            .onSubmit { UIApplication.shared.endEditing() }
                             .padding(.horizontal)
 
                         Button(action: save) {

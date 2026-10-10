@@ -26,10 +26,9 @@ struct ChangePasswordView: View {
                 Alert(title: Text("提示"), message: Text(errorMsg ?? ""),
                       dismissButton: .default(Text("确定")))
             }
-            .alert("修改成功", isPresented: $success) {
-                Button("确定") { presentationMode.wrappedValue.dismiss() }
-            } message: {
-                Text("密码已修改（注意：服务端未校验复杂度，弱口令可直接生效）")
+            .alert(isPresented: $success) {
+                Alert(title: Text("修改成功"), message: Text("密码已修改（注意：服务端未校验复杂度，弱口令可直接生效）"),
+                      dismissButton: .default(Text("确定")) { presentationMode.wrappedValue.dismiss() })
             }
         }
     }

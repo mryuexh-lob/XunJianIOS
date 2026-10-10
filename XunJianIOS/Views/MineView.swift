@@ -33,9 +33,10 @@ struct MineView: View {
                         }
                     }
                     Section {
-                        Button(role: .destructive) { appState.logout() } label: {
+                        Button { appState.logout() } label: {
                             Label("退出登录", systemImage: "arrow.backward.square")
                                 .frame(maxWidth: .infinity, alignment: .center)
+                                .foregroundColor(.red)
                         }
                     }
                 }

@@ -32,12 +32,14 @@ struct AboutView: View {
             .padding(.top, 30)
             .navigationTitle("关于")
             .navigationBarItems(trailing: Button("关闭") { presentationMode.wrappedValue.dismiss() })
-            .alert("发现新版本", isPresented: $showUpdateInfo) {
-                Button("确定") { if latest?.forceUpdate == true { showForce = true } }
-            } message: { Text(updateText()) }
-            .alert("强制更新", isPresented: $showForce) {
-                Button("我知道了") { }
-            } message: { Text("当前版本过低，必须更新后才能使用。") }
+            .alert(isPresented: $showUpdateInfo) {
+                Alert(title: Text("发现新版本"), message: Text(updateText()),
+                      dismissButton: .default(Text("确定")) { if latest?.forceUpdate == true { showForce = true } })
+            }
+            .alert(isPresented: $showForce) {
+                Alert(title: Text("强制更新"), message: Text("当前版本过低，必须更新后才能使用。"),
+                      dismissButton: .default(Text("我知道了")))
+            }
         }
     }
 
