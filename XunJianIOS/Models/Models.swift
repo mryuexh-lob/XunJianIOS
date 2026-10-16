@@ -47,6 +47,77 @@ struct InspectionTask: Identifiable, Codable {
     let workTime: String?
     let formResult: String?
     let hazard: String?
+    // 点位定位与现场照片（建单采集）
+    let longitude: String?
+    let latitude: String?
+    let photos: String?
+    // 任务归属人（ADMIN 查看全量任务时展示）
+    let owner: String?
+    let ownerName: String?
+}
+
+// MARK: - 表单化作业结果（formResult 的 JSON 子串解析）
+struct FormResult {
+    let items: [String]
+    let deviceNo: String?
+    let workTime: String?
+    let content: String?
+    let photos: [String]
+
+    static func parse(_ json: String) -> FormResult? {
+        guard let data = json.data(using: .utf8),
+              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        let itemsRaw = obj["items"] as? String ?? "[]"
+        let items = (try? JSONSerialization.jsonObject(with: Data(itemsRaw.utf8)) as? [String]) ?? []
+        let photosRaw = obj["photos"] as? String ?? "[]"
+        let photos = (try? JSONSerialization.jsonObject(with: Data(photosRaw.utf8)) as? [String]) ?? []
+        return FormResult(items: items,
+                          deviceNo: obj["deviceNo"] as? String,
+                          workTime: obj["workTime"] as? String,
+                          content: obj["content"] as? String,
+                          photos: photos)
+    }
+}
+
+// MARK: - 操作日志
+struct OpLog: Identifiable, Codable {
+    let id: Int
+    let logType: String?
+    let level: String?
+    let username: String?
+    let action: String?
+    let detail: String?
+    let ip: String?
+    let createTime: String?
+}
+
+struct LogStats: Codable {
+    let business: Int?
+    let system: Int?
+    let total: Int?
+}
+
+struct LogListResponse: Codable {
+    let list: [OpLog]?
+    let stats: LogStats?
+}
+
+// MARK: - 后台管理（用户 / 角色权限）
+struct AdminUser: Identifiable, Codable {
+    let id: Int
+    let username: String?
+    let realName: String?
+    let role: String?
+    let phone: String?
+    let email: String?
+}
+
+struct RoleInfo: Identifiable, Codable {
+    let id: Int
+    let code: String?
+    let name: String?
+    let remark: String?
+    let menus: String?
 }
 
 // MARK: - App 版本

@@ -5,6 +5,9 @@ struct MineView: View {
     @State private var user: UserInfo?
     @State private var showChangePwd = false
     @State private var showAbout = false
+    @State private var showLogs = false
+    @State private var showUsers = false
+    @State private var showRoles = false
     @State private var errorMsg: String?
     @State private var showError = false
 
@@ -24,6 +27,23 @@ struct MineView: View {
                 .background(Color.brand.opacity(0.08))
 
                 List {
+                    Section {
+                        if TokenManager.canAccess("/system/log") {
+                            Button { showLogs = true } label: {
+                                Label("操作日志", systemImage: "doc.text.magnifyingglass")
+                            }
+                        }
+                        if TokenManager.canAccess("/system/user") {
+                            Button { showUsers = true } label: {
+                                Label("用户管理", systemImage: "person.2")
+                            }
+                        }
+                        if TokenManager.canAccess("/system/role") {
+                            Button { showRoles = true } label: {
+                                Label("权限管理", systemImage: "key")
+                            }
+                        }
+                    }
                     Section {
                         Button { showChangePwd = true } label: {
                             Label("修改密码", systemImage: "lock.rotation")
@@ -47,6 +67,9 @@ struct MineView: View {
             .onAppear { Task { await load() } }
             .sheet(isPresented: $showChangePwd) { ChangePasswordView() }
             .sheet(isPresented: $showAbout)    { AboutView() }
+            .sheet(isPresented: $showLogs)     { LogListView() }
+            .sheet(isPresented: $showUsers)    { UserListView() }
+            .sheet(isPresented: $showRoles)    { RoleListView() }
             .alert(isPresented: $showError) {
                 Alert(title: Text("错误"), message: Text(errorMsg ?? ""),
                       dismissButton: .default(Text("确定")))

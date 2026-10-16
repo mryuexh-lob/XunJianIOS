@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct TaskDetailView: View {
     let taskId: Int
@@ -12,6 +13,9 @@ struct TaskDetailView: View {
     @State private var showAssign = false
     @State private var showUpdate = false
     @State private var inspectors: [Inspector] = []
+
+    /// AUDITOR 无 /inspection/task 权限，仅可查看，不可操作。
+    private var canManage: Bool { TokenManager.canAccess("/inspection/task") }
 
     var body: some View {
         Group {
@@ -38,38 +42,66 @@ struct TaskDetailView: View {
                         infoRow("作业时间", task.workTime)
                         infoRow("创建时间", task.createdAt)
                         if let remark = task.remark, !remark.isEmpty { infoRow("备注", remark) }
+                        // ADMIN 查看全量任务时，展示任务归属人
+                        if let owner = task.owner, owner != "—" {
+                            infoRow("归属人", (task.ownerName ?? owner).isEmpty ? owner : (task.ownerName ?? owner))
+                        }
 
                         Divider()
-                        Text("操作").font(.headline)
+                        Text("点位定位").font(.headline)
+                        infoRow("经纬度", coordText(task))
 
-                        actionButton("接单", icon: "checkmark.circle") {
-                            try await APIClient.shared.acceptInspection(id: taskId)
-                        }
-                        actionButton("更新状态/备注", icon: "pencil") { showUpdate = true }
-                        actionButton("危险点登记", icon: "exclamationmark.triangle") { showHazard = true }
-                        actionButton("表单化作业", icon: "list.bullet") { showForm = true }
-                        actionButton("指派", icon: "person.2") {
-                            await loadInspectors()
-                            showAssign = true
-                        }
+                        Divider()
+                        Text("现场照片").font(.headline)
+                        PhotoThumbRow(paths: PhotoJSON.decode(task.photos))
 
-                        Button {
-                            Task {
-                                busy = true
-                                do {
-                                    try await APIClient.shared.deleteInspection(id: taskId)
-                                    await MainActor.run { presentationMode.wrappedValue.dismiss() }
-                                } catch {
-                                    message = error.localizedDescription; showError = true
-                                }
-                                busy = false
+                        // 表单化作业结果（处理内容 + 处理照片）
+                        if let form = task.formResult, !form.isEmpty,
+                           let model = FormResult.parse(form) {
+                            Divider()
+                            Text("作业结果").font(.headline)
+                            infoRow("处理内容", model.content)
+                            infoRow("作业设备", model.deviceNo)
+                            infoRow("作业时间", model.workTime)
+                            if !model.items.isEmpty {
+                                infoRow("巡检项", model.items.joined(separator: "、"))
                             }
-                        } label: {
-                            Label("删除任务", systemImage: "trash")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(12)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(8)
+                            if !model.photos.isEmpty {
+                                PhotoThumbRow(paths: model.photos)
+                            }
+                        }
+
+                        if canManage {
+                            Divider()
+                            Text("操作").font(.headline)
+                            actionButton("接单", icon: "checkmark.circle") {
+                                try await APIClient.shared.acceptInspection(id: taskId)
+                            }
+                            actionButton("更新状态/备注", icon: "pencil") { showUpdate = true }
+                            actionButton("危险点登记", icon: "exclamationmark.triangle") { showHazard = true }
+                            actionButton("表单化作业", icon: "list.bullet") { showForm = true }
+                            actionButton("指派", icon: "person.2") {
+                                await loadInspectors()
+                                showAssign = true
+                            }
+                            Button {
+                                Task {
+                                    busy = true
+                                    do {
+                                        try await APIClient.shared.deleteInspection(id: taskId)
+                                        await MainActor.run { presentationMode.wrappedValue.dismiss() }
+                                    } catch {
+                                        message = error.localizedDescription; showError = true
+                                    }
+                                    busy = false
+                                }
+                            } label: {
+                                Label("删除任务", systemImage: "trash")
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(12)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(8)
+                            }
                         }
                     }
                     .padding()
@@ -88,6 +120,11 @@ struct TaskDetailView: View {
         .sheet(isPresented: $showForm)    { FormSheet(taskId: taskId, deviceNo: task?.deviceNo ?? "", onDone: reload) }
         .sheet(isPresented: $showAssign)  { AssignSheet(taskId: taskId, inspectors: inspectors, onDone: reload) }
         .sheet(isPresented: $showUpdate)  { UpdateSheet(taskId: taskId, currentStatus: task?.status, onDone: reload) }
+    }
+
+    private func coordText(_ t: InspectionTask) -> String? {
+        guard let lat = t.latitude, !lat.isEmpty, let lng = t.longitude, !lng.isEmpty else { return nil }
+        return "\(lat), \(lng)"
     }
 
     func load() async {
@@ -121,6 +158,33 @@ struct TaskDetailView: View {
                 .padding(12)
                 .background(Color(.systemGray6))
                 .cornerRadius(8)
+        }
+    }
+}
+
+/// 现场/作业照片缩略图（按 app 私有路径读取，不上传后端二进制）。
+struct PhotoThumbRow: View {
+    let paths: [String]
+    var body: some View {
+        if paths.isEmpty {
+            Text("无").font(.subheadline).foregroundColor(.gray)
+        } else {
+            ScrollView(.horizontal) {
+                HStack {
+                    ForEach(paths.indices, id: \.self) { i in
+                        if let img = UIImage(contentsOfFile: paths[i]) {
+                            Image(uiImage: img)
+                                .resizable().scaledToFill()
+                                .frame(width: 96, height: 96).cornerRadius(8).clipped()
+                        } else {
+                            Image(systemName: "photo")
+                                .frame(width: 96, height: 96)
+                                .background(Color(.systemGray6)).cornerRadius(8)
+                        }
+                    }
+                }
+            }
+            .frame(height: 104)
         }
     }
 }
@@ -168,7 +232,7 @@ struct HazardSheet: View {
     }
 }
 
-// MARK: - 表单化作业
+// MARK: - 表单化作业（含处理内容 + 处理照片）
 struct FormSheet: View {
     let taskId: Int
     let deviceNo: String
@@ -176,6 +240,11 @@ struct FormSheet: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var items = ""
     @State private var dev: String
+    @State private var content = ""
+    @State private var photos: [String] = []
+    @State private var thumbnails: [UIImage] = []
+    @State private var showCamera = false
+    @State private var showGallery = false
     @State private var errorMsg: String?
     @State private var showError = false
 
@@ -188,6 +257,33 @@ struct FormSheet: View {
             Form {
                 TextField("设备编号", text: $dev)
                 TextField("巡检项（JSON 数组，如 [\"测温\",\"紧固\"]）", text: $items)
+                Section(header: Text("处理内容")) {
+                    TextEditor(text: $content)
+                        .frame(minHeight: 100)
+                }
+                Section(header: Text("处理照片")) {
+                    HStack {
+                        Button(action: { showCamera = true }) {
+                            Label("拍照", systemImage: "camera").font(.subheadline)
+                        }
+                        Spacer()
+                        Button(action: { showGallery = true }) {
+                            Label("从相册选择", systemImage: "photo.on.rectangle").font(.subheadline)
+                        }
+                    }
+                    if !thumbnails.isEmpty {
+                        ScrollView(.horizontal) {
+                            HStack {
+                                ForEach(thumbnails.indices, id: \.self) { i in
+                                    Image(uiImage: thumbnails[i])
+                                        .resizable().scaledToFill()
+                                        .frame(width: 72, height: 72).cornerRadius(8).clipped()
+                                }
+                            }
+                        }
+                        .frame(height: 80)
+                    }
+                }
             }
             .navigationTitle("表单化作业")
             .navigationBarItems(leading: Button("取消") { presentationMode.wrappedValue.dismiss() },
@@ -196,12 +292,27 @@ struct FormSheet: View {
                 Alert(title: Text("错误"), message: Text(errorMsg ?? ""),
                       dismissButton: .default(Text("确定")))
             }
+            .sheet(isPresented: $showCamera) {
+                ImagePicker(sourceType: .camera) { img in handlePicked(img) }
+            }
+            .sheet(isPresented: $showGallery) {
+                ImagePicker(sourceType: .photoLibrary) { img in handlePicked(img) }
+            }
         }
+    }
+    func handlePicked(_ image: UIImage) {
+        guard let path = ImageStore.save(image) else {
+            errorMsg = "照片保存失败"; showError = true; return
+        }
+        photos.append(path)
+        thumbnails.append(image)
     }
     func submit() {
         Task {
             do {
-                try await APIClient.shared.formInspection(id: taskId, items: items, deviceNo: dev)
+                try await APIClient.shared.formInspection(id: taskId, items: items, deviceNo: dev,
+                                                         content: content,
+                                                         photos: PhotoJSON.encode(photos))
                 await MainActor.run { presentationMode.wrappedValue.dismiss(); onDone() }
             } catch {
                 await MainActor.run { errorMsg = error.localizedDescription; showError = true }

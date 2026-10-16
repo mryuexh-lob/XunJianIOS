@@ -52,5 +52,9 @@
     <string>电力巡检助手需要访问相册，用于保存和选取巡检照片与表单附件。</string>
     <key>NSPhotoLibraryAddUsageDescription</key>
     <string>电力巡检助手需要将巡检照片保存到相册。</string>
+    <!-- 缺陷 N4（静态权限过度声明）：声明通讯录权限但 App 从不读取/上传通讯录，
+         与安卓端 READ_CONTACTS 一致，仅用于演示权限最小化违规。隐私政策已声明不收集通讯录。 -->
+    <key>NSContactsUsageDescription</key>
+    <string>电力巡检助手承诺不读取您的通讯录，本权限仅为兼容声明，不会访问任何联系人数据。</string>
 </dict>
 </plist>

@@ -76,9 +76,7 @@ struct TaskListView: View {
                 }
             }
             .navigationTitle("巡检任务")
-            .navigationBarItems(trailing: Button(action: { showNew = true }) {
-                Image(systemName: "plus")
-            })
+            .navigationBarItems(trailing: newTaskButton)
             .onAppear { Task { await load() } }
             .sheet(isPresented: $showNew) {
                 NewTaskView(onCreated: { Task { await load() } })
@@ -97,5 +95,12 @@ struct TaskListView: View {
             errorMsg = error.localizedDescription
         }
         busy = false
+    }
+
+    @ViewBuilder
+    private var newTaskButton: some View {
+        if TokenManager.canAccess("/inspection/create") {
+            Button(action: { showNew = true }) { Image(systemName: "plus") }
+        }
     }
 }

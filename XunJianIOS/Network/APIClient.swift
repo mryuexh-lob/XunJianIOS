@@ -99,7 +99,15 @@ struct APIClient {
         return try decoder.decode([InspectionTask].self, from: Data(r.body.utf8))
     }
 
-    func createInspection(_ fields: [String: String]) async throws {
+    /// 新建巡检任务：点位需带当前位置坐标 + 现场照片（路径引用，App 端存储，不向后端传二进制）。
+    func createInspection(title: String, address: String, line: String, tower: String,
+                          point: String, deviceNo: String, taskType: String,
+                          latitude: String, longitude: String, photos: String) async throws {
+        let fields: [String: Any] = [
+            "title": title, "address": address, "line": line,
+            "tower": tower, "point": point, "deviceNo": deviceNo, "taskType": taskType,
+            "latitude": latitude, "longitude": longitude, "photos": photos
+        ]
         let data = try json(fields)
         let r = try await request(method: "POST", path: "/api/inspections",
                                   token: TokenManager.token, body: data)
@@ -135,8 +143,9 @@ struct APIClient {
         guard r.statusCode == 200 else { throw APIError.http(r.statusCode, extractMessage(r.body) ?? "危险点登记失败") }
     }
 
-    func formInspection(id: Int, items: String, deviceNo: String) async throws {
-        let data = try json(["items": items, "deviceNo": deviceNo])
+    /// 表单化作业：填写处理内容并附上处理照片（路径引用，App 端存储）。
+    func formInspection(id: Int, items: String, deviceNo: String, content: String, photos: String) async throws {
+        let data = try json(["items": items, "deviceNo": deviceNo, "content": content, "photos": photos])
         let r = try await request(method: "POST", path: "/api/inspections/\(id)/form",
                                   token: TokenManager.token, body: data)
         guard r.statusCode == 200 else { throw APIError.http(r.statusCode, extractMessage(r.body) ?? "表单提交失败") }
@@ -158,6 +167,37 @@ struct APIClient {
         let r = try await request(method: "GET", path: "/api/inspections/inspectors", token: TokenManager.token)
         guard r.statusCode == 200 else { throw APIError.http(r.statusCode, extractMessage(r.body) ?? "获取人员失败") }
         return try decoder.decode([Inspector].self, from: Data(r.body.utf8))
+    }
+
+    // MARK: - 后台管理（日志 / 用户 / 角色权限，ADMIN / AUDITOR 可用）
+    func logs(keyword: String?, username: String?) async throws -> LogListResponse {
+        var comps = URLComponents(string: "/api/admin/logs")!
+        var q: [URLQueryItem] = []
+        if let k = keyword, !k.isEmpty { q.append(URLQueryItem(name: "keyword", value: k)) }
+        if let u = username, !u.isEmpty { q.append(URLQueryItem(name: "username", value: u)) }
+        comps.queryItems = q.isEmpty ? nil : q
+        let path = comps.string ?? "/api/admin/logs"
+        let r = try await request(method: "GET", path: path, token: TokenManager.token)
+        guard r.statusCode == 200 else {
+            throw APIError.http(r.statusCode, extractMessage(r.body) ?? "获取日志失败")
+        }
+        return try decoder.decode(LogListResponse.self, from: Data(r.body.utf8))
+    }
+
+    func adminUsers() async throws -> [AdminUser] {
+        let r = try await request(method: "GET", path: "/api/admin/users", token: TokenManager.token)
+        guard r.statusCode == 200 else {
+            throw APIError.http(r.statusCode, extractMessage(r.body) ?? "获取用户失败")
+        }
+        return try decoder.decode([AdminUser].self, from: Data(r.body.utf8))
+    }
+
+    func adminRoles() async throws -> [RoleInfo] {
+        let r = try await request(method: "GET", path: "/api/admin/roles", token: TokenManager.token)
+        guard r.statusCode == 200 else {
+            throw APIError.http(r.statusCode, extractMessage(r.body) ?? "获取角色失败")
+        }
+        return try decoder.decode([RoleInfo].self, from: Data(r.body.utf8))
     }
 
     // MARK: - 版本检查（匿名接口）
