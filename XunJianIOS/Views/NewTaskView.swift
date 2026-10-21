@@ -21,8 +21,8 @@ struct NewTaskView: View {
     @State private var longitude = ""
     @State private var photos: [String] = []
     @State private var thumbnails: [UIImage] = []
-    @State private var showCamera = false
-    @State private var showGallery = false
+    /// 单一 sheet 承载拍照/相册，避免多个 .sheet 争抢导致"点相册先进相机"
+    @State private var pickerSource: PhotoSource?
     @State private var showLocating = false
 
     let types = ["常规", "特巡", "夜巡", "故障"]
@@ -59,15 +59,8 @@ struct NewTaskView: View {
                 }
 
                 Section(header: Text("现场照片（建单必传）")) {
-                    HStack {
-                        Button(action: { showCamera = true }) {
-                            Label("拍照", systemImage: "camera").font(.subheadline)
-                        }
-                        Spacer()
-                        Button(action: { showGallery = true }) {
-                            Label("从相册选择", systemImage: "photo.on.rectangle").font(.subheadline)
-                        }
-                    }
+                    PhotoPickerRows(onCamera: { openPicker(.camera) },
+                                    onLibrary: { openPicker(.library) })
                     if !thumbnails.isEmpty {
                         ScrollView(.horizontal) {
                             HStack {
@@ -92,11 +85,13 @@ struct NewTaskView: View {
                 Alert(title: Text("提示"), message: Text(errorMsg ?? ""),
                       dismissButton: .default(Text("确定")))
             }
-            .sheet(isPresented: $showCamera) {
-                ImagePicker(sourceType: .camera) { img in handlePicked(img) }
-            }
-            .sheet(isPresented: $showGallery) {
-                ImagePicker(sourceType: .photoLibrary) { img in handlePicked(img) }
+            .sheet(item: $pickerSource) { src in
+                ImagePicker(source: src,
+                            isPresented: Binding(
+                                get: { pickerSource != nil },
+                                set: { if !$0 { pickerSource = nil } })) { img in
+                    handlePicked(img)
+                }
             }
             .onReceive(locator.$coordinate) { coord in
                 if let c = coord {
@@ -119,6 +114,24 @@ struct NewTaskView: View {
     func getLocation() {
         showLocating = true
         locator.fetch()
+    }
+
+    /// 打开拍照/相册：拍照先确认相机权限与设备可用性，再统一走同一个 sheet。
+    func openPicker(_ src: PhotoSource) {
+        if src == .camera {
+            guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
+                errorMsg = PhotoPermission.cameraUnavailableTip; showError = true; return
+            }
+            PhotoPermission.ensureCamera { granted in
+                if granted {
+                    pickerSource = .camera
+                } else {
+                    errorMsg = PhotoPermission.cameraDeniedTip; showError = true
+                }
+            }
+        } else {
+            pickerSource = .library
+        }
     }
 
     func handlePicked(_ image: UIImage) {

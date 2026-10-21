@@ -1,6 +1,15 @@
 import SwiftUI
 import UIKit
 
+/// 任务详情页的操作弹窗。
+///
+/// 同一视图上叠多个 `.sheet(isPresented:)` 时 SwiftUI 只会让其中一个抢占展示，
+/// 导致点 A 却弹出 B（或点了没反应），因此统一收敛为一个枚举 + 单个 `.sheet(item:)`。
+enum TaskDetailSheet: String, Identifiable {
+    case hazard, form, assign, update
+    var id: String { rawValue }
+}
+
 struct TaskDetailView: View {
     let taskId: Int
     @Environment(\.presentationMode) var presentationMode
@@ -8,10 +17,7 @@ struct TaskDetailView: View {
     @State private var busy = false
     @State private var message: String?
     @State private var showError = false
-    @State private var showHazard = false
-    @State private var showForm = false
-    @State private var showAssign = false
-    @State private var showUpdate = false
+    @State private var activeSheet: TaskDetailSheet?
     @State private var inspectors: [Inspector] = []
 
     /// AUDITOR 无 /inspection/task 权限，仅可查看，不可操作。
@@ -77,12 +83,12 @@ struct TaskDetailView: View {
                             actionButton("接单", icon: "checkmark.circle") {
                                 try await APIClient.shared.acceptInspection(id: taskId)
                             }
-                            actionButton("更新状态/备注", icon: "pencil") { showUpdate = true }
-                            actionButton("危险点登记", icon: "exclamationmark.triangle") { showHazard = true }
-                            actionButton("表单化作业", icon: "list.bullet") { showForm = true }
+                            actionButton("更新状态/备注", icon: "pencil") { self.activeSheet = .update }
+                            actionButton("危险点登记", icon: "exclamationmark.triangle") { self.activeSheet = .hazard }
+                            actionButton("表单化作业", icon: "list.bullet") { self.activeSheet = .form }
                             actionButton("指派", icon: "person.2") {
-                                await loadInspectors()
-                                showAssign = true
+                                await self.loadInspectors()
+                                self.activeSheet = .assign
                             }
                             Button {
                                 Task {
@@ -116,10 +122,18 @@ struct TaskDetailView: View {
             Alert(title: Text("提示"), message: Text(message ?? ""),
                   dismissButton: .default(Text("确定")) { Task { await load() } })
         }
-        .sheet(isPresented: $showHazard)  { HazardSheet(taskId: taskId, onDone: reload) }
-        .sheet(isPresented: $showForm)    { FormSheet(taskId: taskId, deviceNo: task?.deviceNo ?? "", onDone: reload) }
-        .sheet(isPresented: $showAssign)  { AssignSheet(taskId: taskId, inspectors: inspectors, onDone: reload) }
-        .sheet(isPresented: $showUpdate)  { UpdateSheet(taskId: taskId, currentStatus: task?.status, onDone: reload) }
+        .sheet(item: $activeSheet) { kind in
+            switch kind {
+            case .hazard:
+                HazardSheet(taskId: taskId, onDone: reload)
+            case .form:
+                FormSheet(taskId: taskId, deviceNo: task?.deviceNo ?? "", onDone: reload)
+            case .assign:
+                AssignSheet(taskId: taskId, inspectors: inspectors, onDone: reload)
+            case .update:
+                UpdateSheet(taskId: taskId, currentStatus: task?.status, onDone: reload)
+            }
+        }
     }
 
     private func coordText(_ t: InspectionTask) -> String? {
@@ -243,8 +257,8 @@ struct FormSheet: View {
     @State private var content = ""
     @State private var photos: [String] = []
     @State private var thumbnails: [UIImage] = []
-    @State private var showCamera = false
-    @State private var showGallery = false
+    /// 单一 sheet 承载拍照/相册，避免多个 .sheet 争抢导致"点相册先进相机"
+    @State private var pickerSource: PhotoSource?
     @State private var errorMsg: String?
     @State private var showError = false
 
@@ -262,15 +276,8 @@ struct FormSheet: View {
                         .frame(minHeight: 100)
                 }
                 Section(header: Text("处理照片")) {
-                    HStack {
-                        Button(action: { showCamera = true }) {
-                            Label("拍照", systemImage: "camera").font(.subheadline)
-                        }
-                        Spacer()
-                        Button(action: { showGallery = true }) {
-                            Label("从相册选择", systemImage: "photo.on.rectangle").font(.subheadline)
-                        }
-                    }
+                    PhotoPickerRows(onCamera: { openPicker(.camera) },
+                                    onLibrary: { openPicker(.library) })
                     if !thumbnails.isEmpty {
                         ScrollView(.horizontal) {
                             HStack {
@@ -292,12 +299,31 @@ struct FormSheet: View {
                 Alert(title: Text("错误"), message: Text(errorMsg ?? ""),
                       dismissButton: .default(Text("确定")))
             }
-            .sheet(isPresented: $showCamera) {
-                ImagePicker(sourceType: .camera) { img in handlePicked(img) }
+            .sheet(item: $pickerSource) { src in
+                ImagePicker(source: src,
+                            isPresented: Binding(
+                                get: { pickerSource != nil },
+                                set: { if !$0 { pickerSource = nil } })) { img in
+                    handlePicked(img)
+                }
             }
-            .sheet(isPresented: $showGallery) {
-                ImagePicker(sourceType: .photoLibrary) { img in handlePicked(img) }
+        }
+    }
+    /// 打开拍照/相册：拍照先确认相机权限与设备可用性，再统一走同一个 sheet。
+    func openPicker(_ src: PhotoSource) {
+        if src == .camera {
+            guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
+                errorMsg = PhotoPermission.cameraUnavailableTip; showError = true; return
             }
+            PhotoPermission.ensureCamera { granted in
+                if granted {
+                    pickerSource = .camera
+                } else {
+                    errorMsg = PhotoPermission.cameraDeniedTip; showError = true
+                }
+            }
+        } else {
+            pickerSource = .library
         }
     }
     func handlePicked(_ image: UIImage) {

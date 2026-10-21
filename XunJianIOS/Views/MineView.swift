@@ -1,13 +1,16 @@
 import SwiftUI
 
+/// 我的页弹窗：收敛为一个枚举 + 单个 `.sheet(item:)`，
+/// 避免同一视图叠多个 `.sheet` 时点 A 弹出 B（或点了没反应）。
+enum MineSheet: String, Identifiable {
+    case changePwd, about, logs, users, roles
+    var id: String { rawValue }
+}
+
 struct MineView: View {
     @EnvironmentObject var appState: AppState
     @State private var user: UserInfo?
-    @State private var showChangePwd = false
-    @State private var showAbout = false
-    @State private var showLogs = false
-    @State private var showUsers = false
-    @State private var showRoles = false
+    @State private var activeSheet: MineSheet?
     @State private var errorMsg: String?
     @State private var showError = false
 
@@ -29,26 +32,26 @@ struct MineView: View {
                 List {
                     Section {
                         if TokenManager.canAccess("/system/log") {
-                            Button { showLogs = true } label: {
+                            Button { activeSheet = .logs } label: {
                                 Label("操作日志", systemImage: "doc.text.magnifyingglass")
                             }
                         }
                         if TokenManager.canAccess("/system/user") {
-                            Button { showUsers = true } label: {
+                            Button { activeSheet = .users } label: {
                                 Label("用户管理", systemImage: "person.2")
                             }
                         }
                         if TokenManager.canAccess("/system/role") {
-                            Button { showRoles = true } label: {
+                            Button { activeSheet = .roles } label: {
                                 Label("权限管理", systemImage: "key")
                             }
                         }
                     }
                     Section {
-                        Button { showChangePwd = true } label: {
+                        Button { activeSheet = .changePwd } label: {
                             Label("修改密码", systemImage: "lock.rotation")
                         }
-                        Button { showAbout = true } label: {
+                        Button { activeSheet = .about } label: {
                             Label("关于", systemImage: "info.circle")
                         }
                     }
@@ -65,11 +68,15 @@ struct MineView: View {
             .navigationTitle("我的")
             .navigationBarHidden(true)
             .onAppear { Task { await load() } }
-            .sheet(isPresented: $showChangePwd) { ChangePasswordView() }
-            .sheet(isPresented: $showAbout)    { AboutView() }
-            .sheet(isPresented: $showLogs)     { LogListView() }
-            .sheet(isPresented: $showUsers)    { UserListView() }
-            .sheet(isPresented: $showRoles)    { RoleListView() }
+            .sheet(item: $activeSheet) { kind in
+                switch kind {
+                case .changePwd: ChangePasswordView()
+                case .about:     AboutView()
+                case .logs:      LogListView()
+                case .users:     UserListView()
+                case .roles:     RoleListView()
+                }
+            }
             .alert(isPresented: $showError) {
                 Alert(title: Text("错误"), message: Text(errorMsg ?? ""),
                       dismissButton: .default(Text("确定")))
