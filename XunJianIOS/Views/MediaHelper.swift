@@ -1,6 +1,7 @@
 import Foundation
 import UIKit
 import CoreLocation
+import SwiftUI
 
 /// 从相机或相册选取照片（UIImagePickerController，iOS 2.0+，兼容 iOS 14）。
 struct ImagePicker: UIViewControllerRepresentable {
