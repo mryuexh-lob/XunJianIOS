@@ -27,7 +27,7 @@ struct UserInfo: Codable {
     let menus: [MenuInfo]?
 }
 
-// MARK: - 巡检任务
+// MARK: - 检修任务
 struct InspectionTask: Identifiable, Codable {
     let id: Int
     let userId: Int?
@@ -102,7 +102,7 @@ struct LogListResponse: Codable {
     let stats: LogStats?
 }
 
-// MARK: - 后台管理（用户 / 角色权限）
+// MARK: - 移动检修管理系统（用户 / 角色权限）
 struct AdminUser: Identifiable, Codable {
     let id: Int
     let username: String?

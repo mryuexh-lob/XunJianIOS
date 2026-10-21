@@ -25,9 +25,9 @@ struct LoginView: View {
                             Image(systemName: "bolt.fill")
                                 .font(.system(size: 40))
                                 .foregroundColor(.brand)
-                            Text("电力巡检助手")
+                            Text("移动检修助手")
                                 .font(.title2).bold()
-                            Text("移动智能巡检平台")
+                            Text("移动智能检修平台")
                                 .font(.footnote).foregroundColor(.gray)
                         }
                         .padding(.top, 30)

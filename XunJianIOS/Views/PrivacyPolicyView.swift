@@ -27,15 +27,15 @@ struct PrivacyPolicyView: View {
                 // 可滚动内容
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("欢迎使用电力巡检助手！")
+                        Text("欢迎使用移动检修助手！")
                             .font(.subheadline)
 
-                        Text("为了保障巡检业务的正常开展，我们需要获取以下权限：")
+                        Text("为了保障检修业务的正常开展，我们需要获取以下权限：")
                             .font(.subheadline)
 
                         VStack(alignment: .leading, spacing: 6) {
-                            permissionRow("存储权限", "用于保存巡检照片与表单附件")
-                            permissionRow("位置权限", "用于绑定巡检任务的地理位置")
+                            permissionRow("存储权限", "用于保存检修照片与表单附件")
+                            permissionRow("位置权限", "用于绑定检修任务的地理位置")
                             permissionRow("相机权限", "用于现场拍照留档")
                         }
                         .font(.caption)
@@ -129,16 +129,16 @@ struct PrivacyPolicyView: View {
     /// 隐私政策全文（简化版，对齐安卓 Toast 提示"隐私政策详情页"）
     private func privacyPolicyText() -> String {
         """
-        电力巡检助手隐私政策
+        移动检修助手隐私政策
 
         一、我们收集的信息
-        为提供巡检服务，我们需要获取以下权限：
-        · 存储权限：保存巡检照片与表单附件
-        · 位置权限：绑定巡检任务的地理位置
+        为提供检修服务，我们需要获取以下权限：
+        · 存储权限：保存检修照片与表单附件
+        · 位置权限：绑定检修任务的地理位置
         · 相机权限：现场拍照留档
 
         二、信息使用
-        收集的信息仅用于巡检业务，不会用于其他目的。
+        收集的信息仅用于检修业务，不会用于其他目的。
 
         三、信息安全
         我们采取合理措施保护您的信息安全，数据通过加密方式传输。

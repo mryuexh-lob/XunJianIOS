@@ -93,7 +93,7 @@ struct MineView: View {
         switch r {
         case "ADMIN":   return "系统管理员"
         case "AUDITOR": return "审计管理员"
-        case "USER":    return "巡检员"
+        case "USER":    return "检修员"
         default:        return r ?? "用户"
         }
     }

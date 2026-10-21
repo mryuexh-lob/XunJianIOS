@@ -53,7 +53,7 @@ struct TaskListView: View {
                     ProgressView()
                 } else if tasks.isEmpty {
                     Spacer()
-                    Text("暂无巡检任务").foregroundColor(.gray)
+                    Text("暂无检修任务").foregroundColor(.gray)
                     Spacer()
                 } else {
                     List(tasks) { task in
@@ -75,7 +75,7 @@ struct TaskListView: View {
                     .listStyle(PlainListStyle())
                 }
             }
-            .navigationTitle("巡检任务")
+            .navigationTitle("检修任务")
             .navigationBarItems(trailing: newTaskButton)
             .onAppear { Task { await load() } }
             .sheet(isPresented: $showNew) {

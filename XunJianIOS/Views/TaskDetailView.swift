@@ -70,7 +70,7 @@ struct TaskDetailView: View {
                             infoRow("作业设备", model.deviceNo)
                             infoRow("作业时间", model.workTime)
                             if !model.items.isEmpty {
-                                infoRow("巡检项", model.items.joined(separator: "、"))
+                                infoRow("检修项", model.items.joined(separator: "、"))
                             }
                             if !model.photos.isEmpty {
                                 PhotoThumbRow(paths: model.photos)
@@ -270,7 +270,7 @@ struct FormSheet: View {
         NavigationView {
             Form {
                 TextField("设备编号", text: $dev)
-                TextField("巡检项（JSON 数组，如 [\"测温\",\"紧固\"]）", text: $items)
+                TextField("检修项（JSON 数组，如 [\"测温\",\"紧固\"]）", text: $items)
                 Section(header: Text("处理内容")) {
                     TextEditor(text: $content)
                         .frame(minHeight: 100)

@@ -13,7 +13,7 @@ struct AboutView: View {
                 Image(systemName: "bolt.fill")
                     .font(.system(size: 48))
                     .foregroundColor(.brand)
-                Text("电力巡检助手").font(.title3).bold()
+                Text("移动检修助手").font(.title3).bold()
                 Text("版本 \(appVersion())").foregroundColor(.gray)
                 Text("服务器：\(TokenManager.serverURL.isEmpty ? "未设置" : TokenManager.serverURL)")
                     .font(.footnote).foregroundColor(.gray)

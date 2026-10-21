@@ -91,7 +91,7 @@ enum PhotoPermission {
         }
     }
 
-    static let cameraDeniedTip = "未获得相机权限，请到「设置 → 隐私与安全性 → 相机」中允许「电力巡检」使用相机"
+    static let cameraDeniedTip = "未获得相机权限，请到「设置 → 隐私与安全性 → 相机」中允许「移动检修助手」使用相机"
     static let cameraUnavailableTip = "当前设备不支持拍照，请改用从相册选择"
 }
 

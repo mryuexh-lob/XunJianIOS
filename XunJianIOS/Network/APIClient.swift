@@ -83,7 +83,7 @@ struct APIClient {
         }
     }
 
-    // MARK: - 巡检任务
+    // MARK: - 检修任务
     func inspections(status: String?, keyword: String?, taskType: String?) async throws -> [InspectionTask] {
         var comps = URLComponents(string: "/api/inspections")!
         var q: [URLQueryItem] = []
@@ -99,7 +99,7 @@ struct APIClient {
         return try decoder.decode([InspectionTask].self, from: Data(r.body.utf8))
     }
 
-    /// 新建巡检任务：点位需带当前位置坐标 + 现场照片（路径引用，App 端存储，不向后端传二进制）。
+    /// 新建检修任务：点位需带当前位置坐标 + 现场照片（路径引用，App 端存储，不向后端传二进制）。
     func createInspection(title: String, address: String, line: String, tower: String,
                           point: String, deviceNo: String, taskType: String,
                           latitude: String, longitude: String, photos: String) async throws {
@@ -169,7 +169,7 @@ struct APIClient {
         return try decoder.decode([Inspector].self, from: Data(r.body.utf8))
     }
 
-    // MARK: - 后台管理（日志 / 用户 / 角色权限，ADMIN / AUDITOR 可用）
+    // MARK: - 移动检修管理系统（日志 / 用户 / 角色权限，ADMIN / AUDITOR 可用）
     func logs(keyword: String?, username: String?) async throws -> LogListResponse {
         var comps = URLComponents(string: "/api/admin/logs")!
         var q: [URLQueryItem] = []

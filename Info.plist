@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleDisplayName</key>
-    <string>电力巡检</string>
+    <string>移动检修助手</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -38,23 +38,23 @@
     </dict>
     <!-- iOS 14+ 访问局域网（192.168.x.x）必须声明，否则连接被静默拦截 -->
     <key>NSLocalNetworkUsageDescription</key>
-    <string>本应用需要访问局域网内的服务器地址，用于登录与同步巡检数据。</string>
+    <string>本应用需要访问局域网内的服务器地址，用于登录与同步检修数据。</string>
     <key>NSBonjourServices</key>
     <array>
         <string>_http._tcp</string>
     </array>
-    <!-- 巡检业务所需权限说明（对齐安卓版存储/位置/相机） -->
+    <!-- 检修业务所需权限说明（对齐安卓版存储/位置/相机） -->
     <key>NSCameraUsageDescription</key>
-    <string>电力巡检助手需要使用相机拍摄现场照片，用于巡检任务留档。</string>
+    <string>移动检修助手需要使用相机拍摄现场照片，用于检修任务留档。</string>
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>电力巡检助手需要获取您的位置信息，用于绑定巡检任务的地理位置。</string>
+    <string>移动检修助手需要获取您的位置信息，用于绑定检修任务的地理位置。</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>电力巡检助手需要访问相册，用于保存和选取巡检照片与表单附件。</string>
+    <string>移动检修助手需要访问相册，用于保存和选取检修照片与表单附件。</string>
     <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>电力巡检助手需要将巡检照片保存到相册。</string>
+    <string>移动检修助手需要将检修照片保存到相册。</string>
     <!-- 缺陷 N4（静态权限过度声明）：声明通讯录权限但 App 从不读取/上传通讯录，
          与安卓端 READ_CONTACTS 一致，仅用于演示权限最小化违规。隐私政策已声明不收集通讯录。 -->
     <key>NSContactsUsageDescription</key>
-    <string>电力巡检助手承诺不读取您的通讯录，本权限仅为兼容声明，不会访问任何联系人数据。</string>
+    <string>移动检修助手承诺不读取您的通讯录，本权限仅为兼容声明，不会访问任何联系人数据。</string>
 </dict>
 </plist>

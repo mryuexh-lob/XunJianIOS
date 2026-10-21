@@ -10,7 +10,7 @@ class AppState: ObservableObject {
 }
 
 extension Color {
-    /// 从十六进制构造颜色，如 Color(hex: 0x0a7d3f)。
+    /// 从十六进制构造颜色，如 Color(hex: 0xEA6A0C)。
     init(hex: UInt, alpha: Double = 1.0) {
         self.init(
             .sRGB,
@@ -21,6 +21,6 @@ extension Color {
         )
     }
 
-    /// 国家电网风格主色（绿）。
-    static let brand = Color(hex: 0x0a7d3f)
+    /// 移动检修助手主色（橙）。
+    static let brand = Color(hex: 0xEA6A0C)
 }

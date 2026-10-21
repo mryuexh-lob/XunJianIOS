@@ -78,7 +78,7 @@ struct NewTaskView: View {
                         .font(.caption).foregroundColor(photos.isEmpty ? .red : .gray)
                 }
             }
-            .navigationTitle("新建巡检任务")
+            .navigationTitle("新建检修任务")
             .navigationBarItems(leading: Button("取消") { presentationMode.wrappedValue.dismiss() },
                                 trailing: Button("保存") { submit() })
             .alert(isPresented: $showError) {
